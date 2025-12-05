@@ -2,44 +2,44 @@ from collections import defaultdict
 
 class VerificadorCactus:
     def __init__(self, quantidade_vertices):
-        self.quantidade_vertices = quantidade_vertices
+        self.n = quantidade_vertices
         self.grafo = defaultdict(list)
-        self.visitado = [False] * quantidade_vertices
-        self.aresta_em_ciclo = set()   
-        self.pai = [-1] * quantidade_vertices
-        self.total_ciclos = 0
+        self.visitado = [False] * self.n
+        self.pai = [-1] * self.n
+        self.nivel = [-1] * self.n
+        self.aresta_em_ciclo = set()
 
-    def adicionar_aresta(self, origem, destino):
-        self.grafo[origem].append(destino)
-        self.grafo[destino].append(origem)
+    def adicionar_aresta(self, u, v):
+        self.grafo[u].append(v)
+        self.grafo[v].append(u)
 
     def verifica_cactus(self):
-        for vertice in range(self.quantidade_vertices):
-            if not self.visitado[vertice]:
-                if not self.busca_profundidade(vertice):
+        for v in range(self.n):
+            if not self.visitado[v]:
+                self.nivel[v] = 0
+                if not self.dfs(v):
                     return False
         return True
 
-    def busca_profundidade(self, vertice):
-        self.visitado[vertice] = True
+    def dfs(self, v):
+        self.visitado[v] = True
 
-        for vizinho in self.grafo[vertice]:
-            if not self.visitado[vizinho]:
-                self.pai[vizinho] = vertice
-                if not self.busca_profundidade(vizinho):
+        for u in self.grafo[v]:
+            if not self.visitado[u]:
+                self.pai[u] = v
+                self.nivel[u] = self.nivel[v] + 1
+                if not self.dfs(u):
                     return False
 
-            elif vizinho != self.pai[vertice]:
-                aresta = tuple(sorted((vertice, vizinho)))
+            elif u != self.pai[v] and self.nivel[u] < self.nivel[v]:
+                aresta = tuple(sorted((u, v)))
 
                 if aresta in self.aresta_em_ciclo:
                     return False
 
                 self.aresta_em_ciclo.add(aresta)
-                self.total_ciclos += 1
 
         return True
-
 
 
 verificador = VerificadorCactus(5)
@@ -51,4 +51,3 @@ verificador.adicionar_aresta(3, 4)
 verificador.adicionar_aresta(4, 1)  
 
 print("É um grafo cactus?", verificador.verifica_cactus())
-print("Quant. de ciclos detectados:", verificador.total_ciclos)
